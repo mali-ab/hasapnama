@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <div class="flex-grow-1"></div>
+            <AuthorizeView>
+                <Authorized>
+                    <span class="me-2 text-muted">@context.User.Identity?.Name</span>
+                    <a class="btn btn-sm btn-outline-secondary" href="/account">Account</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="btn btn-sm btn-primary" href="/login">Sign in</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@using HasapNama.App.Services

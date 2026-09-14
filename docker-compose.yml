@@ -1,0 +1,23 @@
+services:
+  # HasapNama's single shared database. Many apps (Android, Windows, ...)
+  # talk to ONE HasapNama.Server, which talks to ONE Postgres instance.
+  db:
+    image: postgres:16-alpine
+    container_name: hasapnama-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hasapnama
+      POSTGRES_PASSWORD: hasapnama-dev
+      POSTGRES_DB: hasapnama
+    ports:
+      - "5432:5432"
+    volumes:
+      - hasapnama_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hasapnama -d hasapnama"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  hasapnama_pgdata:

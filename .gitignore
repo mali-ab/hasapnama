@@ -1,0 +1,30 @@
+# ---- build outputs ----
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+
+# ---- .NET / NuGet ----
+*.nupkg
+*.snupkg
+
+# ---- local config & secrets (never commit) ----
+**/appsettings*.local.json
+**/appsettings.Production.json
+*.local.env
+.env
+.env.local
+login.docker.js
+.jwt.local
+
+# ---- IDE / OS ----
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ---- logs ----
+*.log

@@ -1,0 +1,122 @@
+@page "/customers/new"
+@page "/customers/{Id:guid}"
+@using HasapNama.App.Services
+@using HasapNama.Shared.Models
+
+<PageTitle>@(Id == Guid.Empty ? "New customer" : "Edit customer") - HasapNama</PageTitle>
+
+<AuthorizeView>
+	<NotAuthorized>
+		<div class="alert alert-warning">
+			Please <a href="/login">sign in</a> to manage customers.
+		</div>
+	</NotAuthorized>
+	<Authorized>
+		<h3>@(Id == Guid.Empty ? "New customer" : "Edit customer")</h3>
+
+		@if (busy)
+		{
+			<div class="spinner-border text-primary" role="status"></div>
+		}
+		else if (customer is null && Id != Guid.Empty)
+		{
+			<div class="alert alert-danger">Customer not found (or you don't have access to it).</div>
+		}
+		else
+		{
+			<EditForm Model="@customer!" FormName="customer" OnValidSubmit="SaveAsync" class="row g-3">
+				<DataAnnotationsValidator />
+				<div class="col-12">
+					<label class="form-label">Name *</label>
+					<InputText @bind-Value="customer!.Name" class="form-control" placeholder="e.g. Ayşe Örnek" />
+					<ValidationMessage For="() => customer!.Name" />
+				</div>
+				<div class="col-12">
+					<label class="form-label">Company</label>
+					<InputText @bind-Value="customer!.Company" class="form-control" />
+				</div>
+				<div class="col-md-6">
+					<label class="form-label">Email</label>
+					<InputText @bind-Value="customer!.Email" class="form-control" type="email" />
+				</div>
+				<div class="col-md-6">
+					<label class="form-label">Phone</label>
+					<InputText @bind-Value="customer!.Phone" class="form-control" />
+				</div>
+				<div class="col-12">
+					<label class="form-label">Address</label>
+					<InputText @bind-Value="customer!.Address" class="form-control" />
+				</div>
+				<div class="col-12">
+					<label class="form-label">Notes</label>
+					<TextArea @bind-Value="customer!.Notes" rows="4" class="form-control" />
+				</div>
+				<div class="col-12 d-flex justify-content-between">
+					<button type="submit" class="btn btn-primary" disabled="@busySave">Save</button>
+					<a href="/customers" class="btn btn-link">Cancel</a>
+				</div>
+				@if (saveError is not null)
+				{
+					<div class="col-12"><div class="alert alert-danger py-2">@saveError</div></div>
+				}
+			</EditForm>
+		}
+	</Authorized>
+</AuthorizeView>
+
+@code {
+	[Parameter] public Guid Id { get; set; }
+
+	private Customer? customer;
+	private bool busy = true;
+	private bool busySave;
+	private string? saveError;
+
+	[Inject] private ApiClient Api { get; set; } = default!;
+	[Inject] private NavigationManager Nav { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (Id == Guid.Empty)
+		{
+			customer = new Customer();
+			busy = false;
+			return;
+		}
+
+		try
+		{
+			customer = await Api.GetCustomerAsync(Id);
+		}
+		catch (Exception ex)
+		{
+			// leave customer null -> "not found" state
+		}
+		finally
+		{
+			busy = false;
+		}
+	}
+
+	private async Task SaveAsync()
+	{
+		busySave = true;
+		saveError = null;
+		try
+		{
+			if (Id == Guid.Empty)
+				await Api.CreateCustomerAsync(customer!);
+			else
+				await Api.UpdateCustomerAsync(Id, customer!);
+			Nav.NavigateTo("/customers");
+		}
+		catch (Exception ex)
+		{
+			saveError = ex.Message;
+		}
+		finally
+		{
+			busySave = false;
+		}
+	}
+}
