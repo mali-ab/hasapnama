@@ -47,7 +47,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    if (builder.Configuration.GetValue<bool>("Db:EnsureCreated") || builder.Environment.IsDevelopment())
+        await db.Database.EnsureCreatedAsync();   // dev: no migrations yet
+    else
+        await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db);
 }
 
